@@ -1,0 +1,155 @@
+'use client'
+
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { Flame, Plus, TrendingUp, Award } from 'lucide-react'
+import { HabitCard } from './HabitCard'
+import { HeatMap } from './HeatMap'
+import { Button } from '@/components/ui/button'
+import { DEMO_HABITS, DEMO_HABIT_LOGS } from '@/lib/demo-data'
+import type { HabitWithLog } from '@/types'
+import { PageWrapper } from '@/components/shared/PageWrapper'
+
+function fireHabitConfetti(x: number, y: number) {
+  if (typeof window === 'undefined') return
+  import('canvas-confetti').then(({ default: confetti }) => {
+    confetti({
+      particleCount: 22,
+      spread: 55,
+      origin: { x: x / window.innerWidth, y: y / window.innerHeight },
+      colors: ['#f97316', '#ef4444', '#fbbf24'],
+      scalar: 0.65,
+      gravity: 1.3,
+      ticks: 100,
+    })
+  })
+}
+
+export function HabitsView() {
+  const [habits, setHabits] = useState<HabitWithLog[]>(DEMO_HABITS)
+
+  const totalCompleted = habits.filter((h) => h.todayLog?.completed).length
+  const longestStreak = Math.max(...habits.map((h) => h.longestStreak), 0)
+  const totalCompletions = habits.reduce((sum, h) => sum + h.totalCompletions, 0)
+
+  function toggleHabit(habitId: string, e: React.MouseEvent) {
+    setHabits((prev) =>
+      prev.map((h) => {
+        if (h.id !== habitId) return h
+        const newCompleted = !h.todayLog?.completed
+        if (newCompleted) fireHabitConfetti(e.clientX, e.clientY)
+        return {
+          ...h,
+          todayLog: { completed: newCompleted, value: h.todayLog?.value },
+          currentStreak: newCompleted ? h.currentStreak + 1 : Math.max(0, h.currentStreak - 1),
+          totalCompletions: newCompleted ? h.totalCompletions + 1 : h.totalCompletions - 1,
+        }
+      }),
+    )
+  }
+
+  return (
+    <PageWrapper>
+      <div className="max-w-5xl mx-auto px-5 py-6">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-6">
+          <div>
+            <h1 className="text-[26px] font-black tracking-tight flex items-center gap-2.5">
+              <span>🔥</span> Habits
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Build the daily rituals that compound over time.
+            </p>
+          </div>
+          <Button className="gap-2 forge-gradient-bg text-white border-0 shadow-sm hover:opacity-90">
+            <Plus className="w-4 h-4" strokeWidth={2.5} />
+            New Habit
+          </Button>
+        </div>
+
+        {/* Stats row */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <StatCard
+            icon="🔥"
+            label="Today"
+            value={`${totalCompleted}/${habits.length}`}
+            sub="completed"
+            color="text-orange-500"
+          />
+          <StatCard
+            icon="🏆"
+            label="Best Streak"
+            value={`${longestStreak}d`}
+            sub="longest run"
+            color="text-yellow-500"
+          />
+          <StatCard
+            icon="📈"
+            label="All time"
+            value={totalCompletions.toString()}
+            sub="check-ins"
+            color="text-primary"
+          />
+        </div>
+
+        {/* Content grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+          {/* Habits list */}
+          <div className="lg:col-span-3 space-y-3">
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-1">
+              Today's habits
+            </p>
+            <motion.div
+              className="space-y-2"
+              initial="hidden"
+              animate="visible"
+              variants={{ visible: { transition: { staggerChildren: 0.045 } } }}
+            >
+              {habits.map((habit) => (
+                <motion.div
+                  key={habit.id}
+                  variants={{ hidden: { opacity: 0, x: -12 }, visible: { opacity: 1, x: 0, transition: { duration: 0.28, ease: [0.16, 1, 0.3, 1] } } }}
+                >
+                  <HabitCard habit={habit} onToggle={toggleHabit} />
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+
+          {/* Heatmap */}
+          <div className="lg:col-span-2">
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">
+              Consistency
+            </p>
+            <div className="card-base p-4">
+              <HeatMap logs={DEMO_HABIT_LOGS} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </PageWrapper>
+  )
+}
+
+function StatCard({
+  icon,
+  label,
+  value,
+  sub,
+  color,
+}: {
+  icon: string
+  label: string
+  value: string
+  sub: string
+  color: string
+}) {
+  return (
+    <div className="card-base p-4 text-center">
+      <div className="text-2xl mb-1">{icon}</div>
+      <p className="text-[11px] text-muted-foreground font-medium">{label}</p>
+      <p className={`text-2xl font-black mt-0.5 tabular-nums ${color}`}>{value}</p>
+      <p className="text-[10px] text-muted-foreground">{sub}</p>
+    </div>
+  )
+}
