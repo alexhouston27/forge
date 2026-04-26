@@ -56,24 +56,24 @@ Energy peak: ${request.energyPeak ?? 'morning'}
 Tasks to fit into free time:
 ${taskList}`
 
-  try {
-    const message = await getClient().messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 2048,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userMessage }],
-    })
-
-    const content = message.content[0]
-    if (content.type !== 'text') throw new Error('Unexpected response type')
-
-    // Strip any markdown code fences if present
-    const raw = content.text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
-    return JSON.parse(raw) as AIScheduleResponse
-  } catch (error) {
-    console.error('[Claude AI]', error)
-    return generateMockSchedule(request)
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey || apiKey === 'your_anthropic_api_key') {
+    console.error('[Claude AI] ANTHROPIC_API_KEY is not set')
+    throw new Error('ANTHROPIC_API_KEY is not configured')
   }
+
+  const message = await getClient().messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 2048,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: userMessage }],
+  })
+
+  const content = message.content[0]
+  if (content.type !== 'text') throw new Error('Unexpected response type')
+
+  const raw = content.text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
+  return JSON.parse(raw) as AIScheduleResponse
 }
 
 function generateMockSchedule(request: AIScheduleRequest): AIScheduleResponse {

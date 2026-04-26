@@ -21,7 +21,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(plan)
   } catch (error) {
-    console.error('[AI Plan]', error)
-    return NextResponse.json({ error: 'Failed to generate plan' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    console.error('[AI Plan]', message)
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

@@ -50,7 +50,10 @@ export function PlannerView() {
         }),
       })
 
-      if (!response.ok) throw new Error('Failed to generate plan')
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({})) as { error?: string }
+        throw new Error(err.error ?? 'Failed to generate plan')
+      }
 
       const data = await response.json() as AIScheduleResponse
       setPlan(data)
@@ -63,8 +66,9 @@ export function PlannerView() {
         isCompleted: false,
       }))
       setTimeBlocks(blocks)
-    } catch {
-      showNotification('Failed to generate plan — check your OpenAI API key', 'error')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to generate plan'
+      showNotification(msg, 'error')
     } finally {
       setLoading(false)
     }
