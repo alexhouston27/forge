@@ -32,7 +32,7 @@ export function HabitsDue({ habits: demoHabits }: HabitsDueProps) {
   const { showNotification } = useAppStore()
   const { user } = useAuth()
 
-  const habits = storeHabits.length > 0 ? storeHabits : demoHabits
+  const habits = storeHabits
   const completed = habits.filter((h) => h.todayLog?.completed).length
 
   async function handleToggle(habit: HabitWithLog, e: React.MouseEvent) {

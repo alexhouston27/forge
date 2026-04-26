@@ -10,7 +10,6 @@ import { ScheduleTimeline } from './ScheduleTimeline'
 import { ProgressSnapshot } from './ProgressSnapshot'
 import { AIPlanButton } from './AIPlanButton'
 import { LifePulse } from './LifePulse'
-import { DEMO_TASKS, DEMO_HABITS, DEMO_TIME_BLOCKS } from '@/lib/demo-data'
 import { useDataStore, useAppStore } from '@/store'
 import { PageWrapper } from '@/components/shared/PageWrapper'
 
@@ -34,8 +33,8 @@ export function TodayView() {
   const { profile } = useAppStore()
   const firstName = profile.name.split(' ')[0]
 
-  const habits = storeHabits.length > 0 ? storeHabits : DEMO_HABITS
-  const tasks = todayTasks.length > 0 ? todayTasks : DEMO_TASKS
+  const habits = storeHabits
+  const tasks = todayTasks
 
   const habitScore = Math.round(
     (habits.filter((h) => h.todayLog?.completed).length / Math.max(habits.length, 1)) * 100,
@@ -102,11 +101,11 @@ export function TodayView() {
             </motion.div>
 
             <motion.div variants={fadeUp}>
-              <PriorityTasks tasks={DEMO_TASKS} />
+              <PriorityTasks tasks={[]} />
             </motion.div>
 
             <motion.div variants={fadeUp}>
-              <HabitsDue habits={DEMO_HABITS} />
+              <HabitsDue habits={[]} />
             </motion.div>
           </div>
 
@@ -121,7 +120,7 @@ export function TodayView() {
             </motion.div>
 
             <motion.div variants={fadeUp}>
-              <ScheduleTimeline timeBlocks={DEMO_TIME_BLOCKS} />
+              <ScheduleTimeline timeBlocks={[]} />
             </motion.div>
           </div>
         </motion.div>

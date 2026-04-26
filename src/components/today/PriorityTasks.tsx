@@ -45,7 +45,7 @@ export function PriorityTasks({ tasks: initialTasks }: PriorityTasksProps) {
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [addingTask, setAddingTask] = useState(false)
 
-  const tasks = storeTasks.length > 0 ? storeTasks : initialTasks
+  const tasks = storeTasks
   const sorted = [...tasks].sort(
     (a, b) => (PRIORITY_ORDER[a.priority] ?? 2) - (PRIORITY_ORDER[b.priority] ?? 2),
   )
