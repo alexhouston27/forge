@@ -49,8 +49,11 @@ export function Header() {
   const { totalXP, level, xpInLevel, xpPct, streak } = computeStats(tasks, habits)
 
   return (
-    <header className="flex items-center justify-between h-[57px] px-4 shrink-0 sticky top-0 z-40"
+    <header
+      className="flex items-center justify-between px-4 shrink-0 sticky top-0 z-40"
       style={{
+        height: 'calc(57px + env(safe-area-inset-top))',
+        paddingTop: 'env(safe-area-inset-top)',
         borderBottom: '1px solid hsl(var(--border))',
         background: 'hsl(var(--background) / 0.92)',
         backdropFilter: 'blur(16px)',
