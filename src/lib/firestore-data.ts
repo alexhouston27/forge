@@ -262,6 +262,17 @@ export function subscribeToJournalEntry(uid: string, date: string, cb: (entry: J
   })
 }
 
+export function subscribeToAllJournalEntries(uid: string, cb: (entries: JournalEntryItem[]) => void) {
+  const q = query(userCol(uid, 'journal'), orderBy('date', 'desc'))
+  return onSnapshot(q, (snap) => {
+    const entries: JournalEntryItem[] = snap.docs.map((d) => {
+      const data = d.data()
+      return { id: d.id, date: d.id, type: data.type ?? 'DAILY', ...data } as JournalEntryItem
+    })
+    cb(entries)
+  })
+}
+
 export async function saveJournalEntry(uid: string, date: string, data: Partial<JournalEntryItem>) {
   const { id, ...rest } = data as JournalEntryItem
   void id
@@ -270,4 +281,20 @@ export async function saveJournalEntry(uid: string, date: string, data: Partial<
       const { setDoc } = await import('firebase/firestore')
       await setDoc(userDoc(uid, 'journal', date), { ...rest, date, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
     })
+}
+
+export async function saveWeeklyReview(uid: string, weekStr: string, data: Record<string, string>) {
+  const ref = userDoc(uid, 'weeklyReviews', weekStr)
+  await updateDoc(ref, { ...data, weekStr, updatedAt: serverTimestamp() })
+    .catch(async () => {
+      const { setDoc } = await import('firebase/firestore')
+      await setDoc(ref, { ...data, weekStr, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
+    })
+}
+
+export function subscribeToWeeklyReview(uid: string, weekStr: string, cb: (data: Record<string, string> | null) => void) {
+  return onSnapshot(userDoc(uid, 'weeklyReviews', weekStr), (snap) => {
+    if (!snap.exists()) { cb(null); return }
+    cb(snap.data() as Record<string, string>)
+  })
 }

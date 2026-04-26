@@ -3,7 +3,7 @@
 import { Search, Focus, Zap } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { useAppStore } from '@/store'
+import { useAppStore, useDataStore } from '@/store'
 import { useAuth } from '@/context/AuthContext'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
@@ -16,13 +16,28 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 
-const DEMO_XP = 2840
-const DEMO_LEVEL = 12
-const DEMO_XP_TO_NEXT = 3200
-const DEMO_STREAK = 14
+const XP_PER_LEVEL = 500
+
+function computeStats(
+  tasks: ReturnType<typeof useDataStore.getState>['tasks'],
+  habits: ReturnType<typeof useDataStore.getState>['habits'],
+) {
+  const taskXP = tasks.filter((t) => t.status === 'DONE' || t.completedAt).length * 10
+  const habitXP = habits.reduce((sum, h) => sum + (h.completedDates?.length ?? 0) * 15, 0)
+  const totalXP = taskXP + habitXP
+
+  const level = Math.floor(totalXP / XP_PER_LEVEL) + 1
+  const xpInLevel = totalXP % XP_PER_LEVEL
+  const xpPct = Math.round((xpInLevel / XP_PER_LEVEL) * 100)
+
+  const streak = habits.length > 0 ? Math.max(...habits.map((h) => h.currentStreak ?? 0)) : 0
+
+  return { totalXP, level, xpInLevel, xpPct, streak }
+}
 
 export function Header() {
   const { setCommandPaletteOpen, focusModeActive, toggleFocusMode, profile } = useAppStore()
+  const { tasks, habits } = useDataStore()
   const { signOut } = useAuth()
   const router = useRouter()
 
@@ -31,7 +46,7 @@ export function Header() {
     router.replace('/login')
   }
 
-  const xpPct = Math.round((DEMO_XP / DEMO_XP_TO_NEXT) * 100)
+  const { totalXP, level, xpInLevel, xpPct, streak } = computeStats(tasks, habits)
 
   return (
     <header className="flex items-center justify-between h-[57px] px-4 shrink-0 sticky top-0 z-40"
@@ -47,7 +62,7 @@ export function Header() {
         {/* Level badge */}
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/8 border border-primary/15">
           <Zap className="w-3 h-3 text-primary" strokeWidth={2.5} />
-          <span className="text-xs font-bold text-primary">Lv.{DEMO_LEVEL}</span>
+          <span className="text-xs font-bold text-primary">Lv.{level}</span>
         </div>
 
         {/* XP bar */}
@@ -60,14 +75,16 @@ export function Header() {
               transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
             />
           </div>
-          <span className="text-[10px] text-muted-foreground tabular-nums">{DEMO_XP.toLocaleString()} XP</span>
+          <span className="text-[10px] text-muted-foreground tabular-nums">{xpInLevel}/{XP_PER_LEVEL} XP</span>
         </div>
 
         {/* Streak */}
-        <div className="hidden md:flex items-center gap-1 text-orange-500">
-          <span className="text-sm">🔥</span>
-          <span className="text-xs font-semibold">{DEMO_STREAK}</span>
-        </div>
+        {streak > 0 && (
+          <div className="hidden md:flex items-center gap-1 text-orange-500">
+            <span className="text-sm">🔥</span>
+            <span className="text-xs font-semibold">{streak}</span>
+          </div>
+        )}
       </div>
 
       {/* Center: search */}
@@ -114,7 +131,7 @@ export function Header() {
             <DropdownMenuLabel className="font-normal pb-2">
               <div className="flex flex-col gap-1">
                 <p className="text-sm font-semibold leading-none">{profile.name}</p>
-                <p className="text-xs leading-none text-muted-foreground">Level {DEMO_LEVEL} · {DEMO_XP.toLocaleString()} XP</p>
+                <p className="text-xs leading-none text-muted-foreground">Level {level} · {totalXP.toLocaleString()} XP</p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
