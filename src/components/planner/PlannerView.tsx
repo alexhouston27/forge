@@ -7,10 +7,9 @@ import { Zap, Clock, Target, Lightbulb, ChevronRight, Loader2 } from 'lucide-rea
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { ScheduleTimeline } from '@/components/today/ScheduleTimeline'
-import { DEMO_TIME_BLOCKS, DEMO_TASKS } from '@/lib/demo-data'
 import type { AIScheduleResponse, TimeBlockItem } from '@/types'
 import { PageWrapper } from '@/components/shared/PageWrapper'
-import { useAppStore } from '@/store'
+import { useAppStore, useDataStore } from '@/store'
 
 const PROMPT_SUGGESTIONS = [
   "I work 9–5, need to workout and finish a project proposal",
@@ -22,6 +21,7 @@ const PROMPT_SUGGESTIONS = [
 export function PlannerView() {
   const router = useRouter()
   const { setDailyFocus, showNotification } = useAppStore()
+  const { tasks } = useDataStore()
   const [prompt, setPrompt] = useState('')
   const [loading, setLoading] = useState(false)
   const [plan, setPlan] = useState<AIScheduleResponse | null>(null)
@@ -46,7 +46,7 @@ export function PlannerView() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt,
-          tasks: DEMO_TASKS,
+          tasks: tasks.filter((t) => t.status !== 'COMPLETED'),
         }),
       })
 
@@ -64,19 +64,7 @@ export function PlannerView() {
       }))
       setTimeBlocks(blocks)
     } catch {
-      // Use mock data as fallback
-      const mockPlan: AIScheduleResponse = {
-        mainFocus: 'Ship the most important deliverable of the day',
-        timeBlocks: DEMO_TIME_BLOCKS.map(({ id, dailyPlanId, isCompleted, ...rest }) => rest),
-        priorities: DEMO_TASKS.slice(0, 3).map((t) => t.title),
-        insights: [
-          'Your peak energy is in the morning — schedule deep work first',
-          'Batch all meetings into a 2-hour window to protect flow time',
-          'Set a hard stop at 6pm to maintain work-life balance',
-        ],
-      }
-      setPlan(mockPlan)
-      setTimeBlocks(DEMO_TIME_BLOCKS)
+      showNotification('Failed to generate plan — check your OpenAI API key', 'error')
     } finally {
       setLoading(false)
     }
