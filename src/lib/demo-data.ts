@@ -1,10 +1,8 @@
-// @ts-nocheck
 import { subDays, format } from 'date-fns'
-import type { GoalWithRelations, HabitWithLog, TaskItem, NoteItem, TimeBlockItem } from '@/types'
 
 // ─── DEMO GOALS ───────────────────────────────────────────────────────────────
 
-export const DEMO_GOALS: GoalWithRelations[] = [
+export const DEMO_GOALS = [
   {
     id: 'goal-1',
     title: 'Get lean and athletic',
@@ -120,7 +118,7 @@ export const DEMO_GOALS: GoalWithRelations[] = [
 
 // ─── DEMO HABITS ──────────────────────────────────────────────────────────────
 
-export const DEMO_HABITS: HabitWithLog[] = [
+export const DEMO_HABITS = [
   {
     id: 'habit-1',
     title: 'Workout',
@@ -229,7 +227,7 @@ export const DEMO_HABIT_LOGS = Array.from({ length: 90 }, (_, i) => {
 
 // ─── DEMO TASKS ───────────────────────────────────────────────────────────────
 
-export const DEMO_TASKS: TaskItem[] = [
+export const DEMO_TASKS = [
   {
     id: 'task-1',
     title: 'Finish FORGE Today dashboard',
@@ -301,7 +299,7 @@ export const DEMO_TASKS: TaskItem[] = [
 
 // ─── DEMO TIME BLOCKS ─────────────────────────────────────────────────────────
 
-export const DEMO_TIME_BLOCKS: TimeBlockItem[] = [
+export const DEMO_TIME_BLOCKS = [
   { id: 'tb-1', dailyPlanId: 'today', title: 'Morning routine', startTime: '07:00', endTime: '08:00', category: 'PERSONAL', color: '#10b981', isCompleted: true },
   { id: 'tb-2', dailyPlanId: 'today', title: 'Deep work — FORGE', startTime: '08:00', endTime: '10:00', category: 'WORK', color: '#6366f1', isCompleted: false },
   { id: 'tb-3', dailyPlanId: 'today', title: 'Break + walk', startTime: '10:00', endTime: '10:30', category: 'BREAK', color: '#f59e0b', isCompleted: false },
@@ -315,7 +313,7 @@ export const DEMO_TIME_BLOCKS: TimeBlockItem[] = [
 
 // ─── DEMO NOTES ───────────────────────────────────────────────────────────────
 
-export const DEMO_NOTES: NoteItem[] = [
+export const DEMO_NOTES = [
   {
     id: 'note-1',
     title: 'The compounding power of daily habits',
