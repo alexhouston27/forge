@@ -182,7 +182,11 @@ interface DataState {
   addNote: (note: NoteItem) => void
   updateNote: (id: string, updates: Partial<NoteItem>) => void
   removeNote: (id: string) => void
+  addHabit: (habit: HabitWithLog) => void
   toggleHabit: (habitId: string, completed: boolean) => void
+  addGoal: (goal: GoalWithRelations) => void
+  updateGoal: (id: string, updates: Partial<GoalWithRelations>) => void
+  removeGoal: (id: string) => void
 }
 
 export const useDataStore = create<DataState>((set) => ({
@@ -216,16 +220,17 @@ export const useDataStore = create<DataState>((set) => ({
   updateNote: (id, updates) =>
     set((s) => ({ notes: s.notes.map((n) => (n.id === id ? { ...n, ...updates } : n)) })),
   removeNote: (id) => set((s) => ({ notes: s.notes.filter((n) => n.id !== id) })),
+  addHabit: (habit) => set((s) => ({ habits: [...s.habits, habit] })),
   toggleHabit: (habitId, completed) =>
     set((s) => ({
       habits: s.habits.map((h) =>
         h.id === habitId
-          ? {
-              ...h,
-              todayLog: { completed, value: h.todayLog?.value },
-              currentStreak: completed ? h.currentStreak + 1 : Math.max(0, h.currentStreak - 1),
-            }
+          ? { ...h, todayLog: { completed, value: h.todayLog?.value } }
           : h,
       ),
     })),
+  addGoal: (goal) => set((s) => ({ goals: [goal, ...s.goals] })),
+  updateGoal: (id, updates) =>
+    set((s) => ({ goals: s.goals.map((g) => (g.id === id ? { ...g, ...updates } : g)) })),
+  removeGoal: (id) => set((s) => ({ goals: s.goals.filter((g) => g.id !== id) })),
 }))

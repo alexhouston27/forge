@@ -7,6 +7,8 @@ import { useAppStore, useDataStore } from '@/store'
 import { Button } from '@/components/ui/button'
 import { cn, generateId } from '@/lib/utils'
 import type { TaskItem, NoteItem } from '@/types'
+import { useAuth } from '@/context/AuthContext'
+import { addTask as addFirestoreTask, addNote as addFirestoreNote } from '@/lib/firestore-data'
 
 const TYPES = [
   { key: 'task', label: 'Task', placeholder: 'What needs to get done?' },
@@ -17,6 +19,7 @@ const TYPES = [
 export function QuickCapture() {
   const { quickCaptureOpen, quickCaptureType, closeQuickCapture, showNotification } = useAppStore()
   const { addTask, addNote } = useDataStore()
+  const { user } = useAuth()
   const [type, setType] = useState<'task' | 'note' | 'idea'>(quickCaptureType)
   const [value, setValue] = useState('')
 
@@ -29,39 +32,28 @@ export function QuickCapture() {
 
   const placeholder = TYPES.find((t) => t.key === type)?.placeholder ?? ''
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!value.trim()) return
-
-    if (type === 'task') {
-      const task: TaskItem = {
-        id: generateId(),
-        title: value.trim(),
-        status: 'TODO',
-        priority: 'MEDIUM',
-        tags: [],
-        scheduledFor: new Date(),
-      }
-      addTask(task)
-      showNotification('Task added')
-    } else {
-      const note: NoteItem = {
-        id: generateId(),
-        title: value.trim().slice(0, 60),
-        content: value.trim(),
-        type: type === 'idea' ? 'IDEA' : 'NOTE',
-        tags: [],
-        isPinned: false,
-        isFavorite: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-      addNote(note)
-      showNotification(type === 'idea' ? 'Idea saved to Vault' : 'Note saved')
-    }
-
+    const text = value.trim()
     setValue('')
     closeQuickCapture()
+
+    if (type === 'task') {
+      if (user) {
+        await addFirestoreTask(user.uid, { title: text, priority: 'MEDIUM' })
+      } else {
+        addTask({ id: generateId(), title: text, status: 'TODO', priority: 'MEDIUM', tags: [] } as TaskItem)
+      }
+      showNotification('Task added')
+    } else {
+      if (user) {
+        await addFirestoreNote(user.uid, { title: text.slice(0, 60), content: text, type: type === 'idea' ? 'IDEA' : 'NOTE' })
+      } else {
+        addNote({ id: generateId(), title: text.slice(0, 60), content: text, type: type === 'idea' ? 'IDEA' : 'NOTE', tags: [], isPinned: false, isFavorite: false, createdAt: new Date(), updatedAt: new Date() } as NoteItem)
+      }
+      showNotification(type === 'idea' ? 'Idea saved to Vault' : 'Note saved')
+    }
   }
 
   return (

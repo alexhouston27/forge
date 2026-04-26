@@ -5,6 +5,8 @@ import { Flame } from 'lucide-react'
 import type { HabitWithLog } from '@/types'
 import { cn, getStreakLabel } from '@/lib/utils'
 import { useDataStore, useAppStore } from '@/store'
+import { useAuth } from '@/context/AuthContext'
+import { toggleHabitDate } from '@/lib/firestore-data'
 
 interface HabitsDueProps {
   habits: HabitWithLog[]
@@ -28,17 +30,19 @@ function fireHabitConfetti(x: number, y: number) {
 export function HabitsDue({ habits: demoHabits }: HabitsDueProps) {
   const { habits: storeHabits, toggleHabit } = useDataStore()
   const { showNotification } = useAppStore()
+  const { user } = useAuth()
 
   const habits = storeHabits.length > 0 ? storeHabits : demoHabits
   const completed = habits.filter((h) => h.todayLog?.completed).length
 
-  function handleToggle(habit: HabitWithLog, e: React.MouseEvent) {
+  async function handleToggle(habit: HabitWithLog, e: React.MouseEvent) {
     const newCompleted = !habit.todayLog?.completed
     toggleHabit(habit.id, newCompleted)
     if (newCompleted) {
       fireHabitConfetti(e.clientX, e.clientY)
       showNotification(`🔥 ${habit.title} — ${habit.currentStreak + 1} day streak!`)
     }
+    if (user) await toggleHabitDate(user.uid, habit.id, newCompleted)
   }
 
   const allDone = completed === habits.length && habits.length > 0

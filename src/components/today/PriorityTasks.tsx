@@ -7,6 +7,8 @@ import type { TaskItem } from '@/types'
 import { cn, getPriorityColor, minutesToDuration } from '@/lib/utils'
 import { useAppStore, useDataStore } from '@/store'
 import { Button } from '@/components/ui/button'
+import { useAuth } from '@/context/AuthContext'
+import { addTask as addFirestoreTask, updateTask as updateFirestoreTask } from '@/lib/firestore-data'
 
 interface PriorityTasksProps {
   tasks: TaskItem[]
@@ -39,6 +41,7 @@ function fireConfetti(x: number, y: number) {
 export function PriorityTasks({ tasks: initialTasks }: PriorityTasksProps) {
   const { showNotification } = useAppStore()
   const { todayTasks: storeTasks, updateTask, addTask } = useDataStore()
+  const { user } = useAuth()
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [addingTask, setAddingTask] = useState(false)
 
@@ -49,31 +52,27 @@ export function PriorityTasks({ tasks: initialTasks }: PriorityTasksProps) {
   const completed = sorted.filter((t) => t.status === 'COMPLETED')
   const pending = sorted.filter((t) => t.status !== 'COMPLETED')
 
-  function toggleTask(task: TaskItem, e: React.MouseEvent) {
+  async function toggleTask(task: TaskItem, e: React.MouseEvent) {
     const newStatus = task.status === 'COMPLETED' ? 'TODO' : 'COMPLETED'
-    updateTask(task.id, {
-      status: newStatus,
-      completedAt: newStatus === 'COMPLETED' ? new Date() : undefined,
-    })
+    updateTask(task.id, { status: newStatus })
     if (newStatus === 'COMPLETED') {
       fireConfetti(e.clientX, e.clientY)
       showNotification(`✓ ${task.title}`)
     }
+    if (user) await updateFirestoreTask(user.uid, task.id, { status: newStatus })
   }
 
-  function submitNewTask(e: React.FormEvent) {
+  async function submitNewTask(e: React.FormEvent) {
     e.preventDefault()
     if (!newTaskTitle.trim()) return
-    addTask({
-      id: Math.random().toString(36).slice(2),
-      title: newTaskTitle.trim(),
-      status: 'TODO',
-      priority: 'MEDIUM',
-      tags: [],
-      scheduledFor: new Date(),
-    })
+    const title = newTaskTitle.trim()
     setNewTaskTitle('')
     setAddingTask(false)
+    if (user) {
+      await addFirestoreTask(user.uid, { title, priority: 'MEDIUM' })
+    } else {
+      addTask({ id: Math.random().toString(36).slice(2), title, status: 'TODO', priority: 'MEDIUM', tags: [] })
+    }
   }
 
   return (

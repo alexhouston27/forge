@@ -36,7 +36,7 @@ export function GoalForm({ onSubmit, onCancel, initialData }: GoalFormProps) {
   const [color, setColor] = useState(initialData?.color ?? '#6366f1')
   const [emoji, setEmoji] = useState(initialData?.emoji ?? '')
   const [targetDate, setTargetDate] = useState(
-    initialData?.targetDate ? new Date(initialData.targetDate).toISOString().split('T')[0] : '',
+    initialData?.targetDate ? String(initialData.targetDate).split('T')[0] : '',
   )
 
   function handleSubmit(e: React.FormEvent) {
@@ -48,7 +48,7 @@ export function GoalForm({ onSubmit, onCancel, initialData }: GoalFormProps) {
       category,
       color,
       emoji: emoji || undefined,
-      targetDate: targetDate ? new Date(targetDate) : undefined,
+      targetDate: targetDate || undefined,
     })
   }
 

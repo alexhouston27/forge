@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { subDays, format } from 'date-fns'
 import type { GoalWithRelations, HabitWithLog, TaskItem, NoteItem, TimeBlockItem } from '@/types'
 

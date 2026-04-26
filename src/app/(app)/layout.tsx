@@ -10,6 +10,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { useAppStore } from '@/store'
 import { useKeyboard } from '@/hooks/useKeyboard'
 import { useAuth } from '@/context/AuthContext'
+import { FirestoreProvider } from '@/providers/FirestoreProvider'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { focusModeActive, commandPaletteOpen, setCommandPaletteOpen } = useAppStore()
@@ -37,6 +38,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (!user) return null
 
   return (
+    <FirestoreProvider>
     <div className="flex h-screen overflow-hidden bg-background">
       {!focusModeActive && <Sidebar />}
 
@@ -52,5 +54,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <QuickCapture />
       <Toaster />
     </div>
+    </FirestoreProvider>
   )
 }

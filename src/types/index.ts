@@ -1,35 +1,4 @@
-// FORGE — Core Type Definitions
-
-export type {
-  User,
-  Goal,
-  Milestone,
-  Habit,
-  HabitLog,
-  Task,
-  DailyPlan,
-  TimeBlock,
-  JournalEntry,
-  WeeklyReview,
-  Note,
-  MoodLog,
-} from '@prisma/client'
-
-export type {
-  GoalCategory,
-  GoalStatus,
-  MilestoneStatus,
-  HabitCategory,
-  HabitFrequency,
-  HabitTrackingType,
-  TaskStatus,
-  TaskPriority,
-  EnergyLevel,
-  JournalType,
-  NoteType,
-} from '@prisma/client'
-
-// ─── Extended / Composed Types ─────────────────────────────────────────────────
+// ─── Core Types ────────────────────────────────────────────────────────────────
 
 export interface GoalWithRelations {
   id: string
@@ -38,7 +7,7 @@ export interface GoalWithRelations {
   category: string
   status: string
   priority: number
-  targetDate?: Date | null
+  targetDate?: string | null
   progress: number
   color: string
   emoji?: string | null
@@ -55,8 +24,8 @@ export interface MilestoneItem {
   title: string
   description?: string | null
   status: string
-  dueDate?: Date | null
-  completedAt?: Date | null
+  dueDate?: string | null
+  completedAt?: string | null
   order: number
 }
 
@@ -78,6 +47,7 @@ export interface HabitItem {
 }
 
 export interface HabitWithLog extends HabitItem {
+  completedDates?: string[]
   todayLog?: {
     completed: boolean
     value?: number | null
@@ -92,37 +62,12 @@ export interface TaskItem {
   priority: string
   energy?: string | null
   estimatedMinutes?: number | null
-  scheduledFor?: Date | null
+  scheduledFor?: string | null
   scheduledTime?: string | null
-  completedAt?: Date | null
-  dueDate?: Date | null
+  completedAt?: string | null
+  dueDate?: string | null
   tags: string[]
   goalId?: string | null
-}
-
-export interface DailyPlanWithRelations {
-  id: string
-  userId: string
-  date: Date
-  mainFocus?: string | null
-  aiGenerated: boolean
-  notes?: string | null
-  productivityScore?: number | null
-  energyScore?: number | null
-  moodScore?: number | null
-  tasks: TaskItem[]
-  timeBlocks: TimeBlockItem[]
-}
-
-export interface TimeBlockItem {
-  id: string
-  dailyPlanId: string
-  title: string
-  startTime: string
-  endTime: string
-  category?: string | null
-  color: string
-  isCompleted: boolean
 }
 
 export interface NoteItem {
@@ -141,7 +86,7 @@ export interface NoteItem {
 
 export interface JournalEntryItem {
   id: string
-  date: Date
+  date: string
   type: string
   wins?: string | null
   mistakes?: string | null
@@ -152,6 +97,17 @@ export interface JournalEntryItem {
   overallScore?: number | null
   mood?: string | null
   energy?: number | null
+}
+
+export interface TimeBlockItem {
+  id: string
+  dailyPlanId: string
+  title: string
+  startTime: string
+  endTime: string
+  category?: string | null
+  color: string
+  isCompleted: boolean
 }
 
 // ─── UI / App Types ────────────────────────────────────────────────────────────
