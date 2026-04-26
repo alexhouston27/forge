@@ -29,8 +29,10 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  // auth.currentUser is populated synchronously from localStorage on SDK init —
+  // use it to skip the loading spinner on refresh when already signed in
+  const [user, setUser] = useState<User | null>(auth.currentUser)
+  const [loading, setLoading] = useState(!auth.currentUser)
   const { updateProfile, updatePreferences, profile, preferences } = useAppStore()
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const uidRef = useRef<string | null>(null)
@@ -50,11 +52,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [updateProfile, updatePreferences, profile, preferences])
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
       setUser(fbUser)
       uidRef.current = fbUser?.uid ?? null
-      if (fbUser) await hydrateStore(fbUser)
       setLoading(false)
+      if (fbUser) hydrateStore(fbUser).catch(() => {})
     })
     return unsubscribe
   }, [hydrateStore])
